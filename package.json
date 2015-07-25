@@ -4,25 +4,24 @@
   "version": "0.0.0",
   "author": "mot <mot.contact.address.pc@gmail.com>",
   "license": "MIT",
-
   "keywords": "hubot, hubot-scripts",
-
   "repository": {
     "type": "git",
     "url": "git://github.com/hubot-scripts/hubot-ritsbus.git"
   },
-
   "bugs": {
     "url": "https://github.com/hubot-scripts/hubot-ritsbus/issues"
   },
-
   "dependencies": {
+    "buffer": "^3.3.1",
+    "cheerio": "^0.19.0",
+    "cron": "^1.0.9",
+    "iconv": "^2.1.8",
+    "request": "^2.60.0"
   },
-
   "peerDependencies": {
     "hubot": "2.x"
   },
-
   "devDependencies": {
     "chai": "^2.1.1",
     "coffee-script": "1.6.3",
@@ -37,9 +36,7 @@
     "sinon": "^1.13.0",
     "sinon-chai": "^2.7.0"
   },
-
   "main": "index.coffee",
-
   "scripts": {
     "test": "grunt test"
   }
