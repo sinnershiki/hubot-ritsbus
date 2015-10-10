@@ -24,25 +24,18 @@ urlKusatsu = ["http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=1&eigCd=7&te
 module.exports = (robot) ->
     #毎年1/1の1時に祝日データの更新
     new cron('0 1 1 1 *', () ->
-        now = new Date
-        year = now.getFullYear()
-        key = "publicHoliday_#{year}"
-        robot.brain.data[key] = []
-        brainPublicHoliday(year,robot)
+        updatePublickHoliday(new Date)
     ).start()
 
     #毎日午前3時にその曜日の時刻表を取得し，データを更新する(エラー処理などはそのうち追加
+    # TO DO : cronで叩くとなぜかエラーが出るのなんとかする
+    # まあ最悪自分にリプライ投げるみたいな雑な対策で
     new cron('0 3 * * *', () ->
         now = new Date
         console.log "午前3時:#{now}"
         #dayIndex = getDayOfWeek(now,robot)
         #getBusSchedule(allDay[dayIndex],url[dayIndex],robot)
     ).start()
-
-    #robot.respond /public holiday/i, (msg) ->
-    #    d = new Date
-    #    key = "publicHoliday_#{d.getFullYear()}"
-    #    console.log robot.brain.data[key]
 
     #次のバスを表示（デフォルトでは10分後）
     robot.respond /bus(.*)/i, (msg) ->
@@ -56,28 +49,28 @@ module.exports = (robot) ->
         #一つ目の引数が数字でないまたは空の場合
         #10分後以降を検索することを設定し，一つ目の引数からバスの行き先を判定
         if isNaN(nextTime)
-            nextTime = 10
+            nextTime = 7
             kind = option[0]
         #一つ目の引数が数字である場合，2つ目の引数から行き先を判定
         else
             kind = option[1]
         #バスの行き先判定
         toName = "南草津"
-        if kind in viaS #(kind is via[0]) or (kind is viaName[0])
+        if kind in viaS
             bus = "直"
-        else if kind in viaP #(kind is via[1]) or (kind is viaName[1])
+        else if kind in viaP
             bus = "P"
-        else if kind in viaC #(kind is via[2]) or (kind is viaName[2])
+        else if kind in viaC
             bus = "か"
-        else if kind in viaK #(kind is via[3]) or (kind is viaName[3])
+        else if kind in viaK
             bus = "笠"
-        else if kind in viaN #(kind is via[4]) or (kind is viaName[4])
+        else if kind in viaN
             bus = "西"
         else if /^草津*/.test(kind)
             to  = "kusatsu"
             toName = "草津"
-        #今の時間帯にnextTime（デフォルトでは10）分後から3時間以内にあるバスを
-        #5件まで次のバスとして表示する
+        #今の時間帯にnextTime（デフォルトでは7）分後から3時間以内にあるバスを
+        #7件まで次のバスとして表示する
         afterDate = new Date(now.getTime() + nextTime*60*1000)
         hour = afterDate.getHours()
         min = afterDate.getMinutes()
@@ -85,48 +78,36 @@ module.exports = (robot) ->
             hour = 5
         count = 0
         busHour = hour
-        #str = "@#{msg.message.user.name} \n"
-        str = "\n"
-        str += "#{toName}行き \n"
-        flag = 0
+        replyMessage = "\n#{toName}行き \n"
 
-        loop
+        while count < 5 or hour+2 > busHour
             nextBus = []
-            console.log key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
-            while robot.brain.data[key] is null
+            key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
+            while robot.brain.data[key] is null and busHour <= 24
                 busHour++
-                if busHour > 24
-                    flag = 1
-                    break
 
-            if flag is 1
-               console.log "last bus"
-               str += "最後のバスです"
-               break
+            if busHour > 24
+                replyMessage += "最後のバスです"
+                break
+
             for value, index in robot.brain.data[key]
                 tmpTime = parseInt(value.match(/\d{2}/))
                 #シャトルバスの場合の判定
                 if not tmpBus = value.match(/\D/)
                     tmpBus = viaS[0]
-                if busHour > hour and ///#{bus}///.test(tmpBus)
+                if (busHour > hour and ///#{bus}///.test(tmpBus))
+                    or (tmpTime > min and ///#{bus}///.test(tmpBus))
                     nextBus.push(value)
                     count++
-                else if tmpTime > min and ///#{bus}///.test(tmpBus)
-                    nextBus.push(value)
-                    count++
-                if count is 5
+                if count < 5
                     break
-            str += busHour
-            str += "時："
-            str += nextBus.join()
-            if count is 5 or hour+2 < busHour
-                break
+            replyMessage += "#{busHour}時：#{nextBus.join()}"
+            replyMessage += "\n"
             busHour++
-            str += "\n"
-        msg.reply str
+        msg.reply replyMessage
 
     #コマンドから全てのバスの時刻表を取得
-    robot.respond /get data/i, (msg) ->
+    robot.respond /data update/i, (msg) ->
         console.log "get data now"
         now = new Date
         brainPublicHoliday(now.getFullYear(),robot)
@@ -135,6 +116,17 @@ module.exports = (robot) ->
             getBusSchedule("minakusa",value,url[index],robot)
             console.log "#{value}:#{urlKusatsu[index]}"
             getBusSchedule("kusatsu",value,urlKusatsu[index],robot)
+
+    #コマンドから祝日のデータ更新
+    robot.respond /holiday update/i, (msg) ->
+        updatePublicHoliday(new Date)
+
+#祝日更新関数
+updatePublicHoliday = (now) ->
+    year = now.getFullYear()
+    key = "publicHoliday_#{year}"
+    robot.brain.data[key] = []
+    brainPublicHoliday(year,robot)
 
 #曜日の要素取得
 getDayOfWeek = (now,robot) ->
@@ -361,4 +353,3 @@ brainNotConstantDay = (year,month,week,day,robot) ->
         tmp.push("#{year}-#{month}-#{d.getDate()}")
         robot.brain.data[key] = tmp
         robot.brain.save()
-
