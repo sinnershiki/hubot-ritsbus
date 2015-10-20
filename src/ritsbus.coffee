@@ -50,8 +50,9 @@ module.exports = (robot) ->
       #一つ目の引数が数字である場合，2つ目の引数から行き先を判定
     else
       kind = option[1]
-      #バスの行き先判定
-      toName = "南草津"
+
+    #バスの行き先判定
+    toName = "南草津"
     if kind in viaS
       bus = "直"
     else if kind in viaP
@@ -75,7 +76,7 @@ module.exports = (robot) ->
     busCount = 0
     busHour = hour
     replyMessage = "\n#{toName}行き \n"
-    while busCount < SHOW_MAX_BUS or hour+2 > busHour
+    while busCount <= SHOW_MAX_BUS and hour+2 > busHour
       nextBus = []
       key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
       while robot.brain.data[key] is null and busHour <= 24
@@ -91,7 +92,7 @@ module.exports = (robot) ->
         if (busHour > hour and ///#{bus}///.test(parseBus)) or (parseTime > min and ///#{bus}///.test(parseBus))
           nextBus.push(value)
           busCount++
-        if busCount < SHOW_MAX_BUS
+        if busCount > SHOW_MAX_BUS
           break
       replyMessage += "#{busHour}時：#{nextBus.join()}\n"
       busHour++
@@ -101,9 +102,7 @@ module.exports = (robot) ->
   robot.respond /data update/i, (msg) ->
     now = new Date
     for value,index in allDay
-      console.log "#{value}:#{url[index]}"
       getBusSchedule("minakusa",value,url[index],robot)
-      console.log "#{value}:#{urlKusatsu[index]}"
       getBusSchedule("kusatsu",value,urlKusatsu[index],robot)
 
 #曜日の要素取得
@@ -141,4 +140,4 @@ brainSchedule = (to,day,body,robot) ->
       key = "#{to}_#{day}_time#{time}"
       robot.brain.data[key] = bm
       robot.brain.save()
-    console.log "#{to}_#{day} 完了"
+  console.log "#{to}_#{day} 完了"
