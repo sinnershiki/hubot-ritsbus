@@ -81,6 +81,7 @@ module.exports = (robot) ->
       key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
       while robot.brain.data[key] is null and busHour <= 24
         busHour++
+        key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
       if busHour > 24
         replyMessage += "最後のバスです"
         break
@@ -92,7 +93,7 @@ module.exports = (robot) ->
         if (busHour > hour and ///#{bus}///.test(parseBus)) or (parseTime > min and ///#{bus}///.test(parseBus))
           nextBus.push(value)
           busCount++
-        if busCount > SHOW_MAX_BUS
+        if busCount >= SHOW_MAX_BUS
           break
       replyMessage += "#{busHour}時：#{nextBus.join()}\n"
       busHour++
