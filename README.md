@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/sinnershiki/hubot-ritsbus.svg?branch=master)](https://travis-ci.org/sinnershiki/hubot-ritsbus)
+
+
 # hubot-ritsbus
 
 search ohmibus
