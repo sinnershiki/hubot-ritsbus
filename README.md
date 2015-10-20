@@ -21,6 +21,7 @@ Then add **hubot-ritsbus** to your `external-scripts.json`:
 ## Sample Interaction
 
 ```
-user1>> hubot hello
-hubot>> hello!
+user1>> hubot bus
+hubot>> 南草津行き
+17時：21,28,P30,35,か40,43,西45
 ```
