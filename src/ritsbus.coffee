@@ -38,14 +38,14 @@ module.exports = (robot) ->
     now = new Date
     dayIndex = getDayOfWeek(now,robot)
     option = msg.match[1].replace(/^\s+/,"").split(/\s/)
-    nextTime = parseInt(option[0],10)
-    bus = ""
+    extensionTime = parseInt(option[0],10)
+    viaBusStop = ""
     kind = ""
     to = "minakusa"
     #一つ目の引数が数字でないまたは空の場合
     #10分後以降を検索することを設定し，一つ目の引数からバスの行き先を判定
-    if isNaN(nextTime)
-      nextTime = 7
+    if isNaN(extensionTime)
+      extensionTime = 7
       kind = option[0]
       #一つ目の引数が数字である場合，2つ目の引数から行き先を判定
     else
@@ -54,29 +54,29 @@ module.exports = (robot) ->
     #バスの行き先判定
     toName = "南草津"
     if kind in viaS
-      bus = "直"
+      viaBusStop = "S"
     else if kind in viaP
-      bus = "P"
+      viaBusStop = "P"
     else if kind in viaC
-      bus = "か"
+      viaBusStop = "か"
     else if kind in viaK
-      bus = "笠"
+      viaBusStop = "笠"
     else if kind in viaN
-      bus = "西"
+      viaBusStop = "西"
     else if /^草津*/.test(kind)
       to  = "kusatsu"
       toName = "草津"
-    #今の時間帯にnextTime（デフォルトでは7）分後から3時間以内にあるバスを
-    #7件まで次のバスとして表示する
-    afterDate = new Date(now.getTime() + nextTime*60*1000)
+    #今の時間帯にextensionTime（デフォルトでは7）分後から3時間以内にあるバスを7件まで次のバスとして表示する
+    afterDate = new Date(now.getTime() + extensionTime*60*1000)
     hour = afterDate.getHours()
     min = afterDate.getMinutes()
     if hour in [0..4]
       hour = 5
-    busCount = 0
+      min = 0
+    busCounter = 0
     busHour = hour
     replyMessage = "\n#{toName}行き \n"
-    while busCount <= SHOW_MAX_BUS and hour+2 > busHour
+    while busCounter < SHOW_MAX_BUS and hour+3 > busHour
       nextBus = []
       key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
       while robot.brain.data[key] is null and busHour <= 24
@@ -90,10 +90,11 @@ module.exports = (robot) ->
         #シャトルバスの場合の判定
         if not parseBus = value.match(/\D/)
           parseBus = viaS[0]
-        if (busHour > hour and ///#{bus}///.test(parseBus)) or (parseTime > min and ///#{bus}///.test(parseBus))
+        #現在の時刻より後のバスをnextBusに追加
+        if (busHour > hour and ///#{viaBusStop}///.test(parseBus)) or (parseTime > min and ///#{viaBusStop}///.test(parseBus))
           nextBus.push(value)
-          busCount++
-        if busCount >= SHOW_MAX_BUS
+          busCounter++
+        if busCounter >= SHOW_MAX_BUS
           break
       replyMessage += "#{busHour}時：#{nextBus.join()}\n"
       busHour++
