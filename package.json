@@ -20,8 +20,8 @@
     "buffer": "^3.3.1",
     "cheerio": "^0.19.0",
     "cron": "^1.0.9",
-    "iconv": "^2.1.8",
-    "japanese-public-holiday": "0.0.0",
+    "iconv": "^2.1.11",
+    "japanese-public-holiday": "0.0.1",
     "request": "^2.60.0"
   },
   "peerDependencies": {
