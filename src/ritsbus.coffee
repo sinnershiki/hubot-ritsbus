@@ -42,10 +42,10 @@ module.exports = (robot) ->
     to = "minakusa"
     toName = "南草津"
     now = new Date
-    options = msg.match[1].replace(/^\s+/,"").split(/\s/)
+    console.log options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
     # 何分後のバスを検索するか取得
-    extensionMinutes = parseInt(option[0], 10)
+    extensionMinutes = getExtensionMinutes(options)
 
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
@@ -59,10 +59,10 @@ module.exports = (robot) ->
     to = "kusatsu"
     toName = "草津"
     now = new Date
-    options = msg.match[1].replace(/^\s+/,"").split(/\s/)
+    options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
     # 何分後のバスを検索するか取得
-    extensionMinutes = parseInt(option[0], 10)
+    extensionMinutes = getExtensionMinutes(options)
 
     replyMessage = "\n#{toName}行き \n"
     replyMessage += getBusList(to, "", extensionMinutes, now, robot)
@@ -73,10 +73,10 @@ module.exports = (robot) ->
     to = "ritsumei"
     toName = "立命館大学"
     now = new Date
-    options = msg.match[1].replace(/^\s+/,"").split(/\s/)
+    options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
     # 何分後のバスを検索するか取得
-    extensionMinutes = parseInt(option[0], 10)
+    extensionMinutes = getExtensionMinutes(options)
 
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
@@ -99,13 +99,13 @@ getExtensionMinutes = (options) ->
   #デフォルトは7分後からのバスを表示
   extensionMinutes = 7
   for opt in options
-    if /\d/.test(opt)
-      extensionMinutes = opt.match(/\d/)
+    if /\d*/.test(opt)
+      console.log extensionMinutes = parseInt(opt.match(/\d*/), 10)
   return extensionMinutes
 
 # 経由地判定
 getViaBusStop = (options) ->
-  viaBusStop = viaShuttle[0]
+  viaBusStop = ""
   for opt in options
     for via in viaList
       if opt in via
@@ -113,7 +113,7 @@ getViaBusStop = (options) ->
   return viaBusStop
 
 # バスの一覧文字列を返す
-getBusList = (to, viaBusStop, date, extensionMinutes, robot) ->
+getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
   # 今の時間帯にextensionMinutes（デフォルトでは7）分後から
   # 3時間以内にあるバスを7件まで次のバスとして表示する
   dayIndex = getDayOfWeek(date, robot)
@@ -142,7 +142,7 @@ getBusList = (to, viaBusStop, date, extensionMinutes, robot) ->
       parseTime = parseInt(value.match(/\d{2}/))
       # シャトルバスの場合の判定
       if not parseBus = value.match(/\D/)
-        parseBus = viaS[0]
+        parseBus = viaShuttle[0]
       # 現在の時刻より後のバスをnextBusに追加
       if (busHour > hour and ///#{viaBusStop}///.test(parseBus)) or (parseTime > min and ///#{viaBusStop}///.test(parseBus))
         nextBus.push(value)
