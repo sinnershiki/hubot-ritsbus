@@ -42,7 +42,7 @@ module.exports = (robot) ->
     to = "minakusa"
     toName = "南草津"
     now = new Date
-    console.log options = msg.match[2].replace(/^\s+/,"").split(/\s/)
+    options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
     # 何分後のバスを検索するか取得
     extensionMinutes = getExtensionMinutes(options)
@@ -99,8 +99,8 @@ getExtensionMinutes = (options) ->
   #デフォルトは7分後からのバスを表示
   extensionMinutes = 7
   for opt in options
-    if /\d*/.test(opt)
-      console.log extensionMinutes = parseInt(opt.match(/\d*/), 10)
+    if /\d+/.test(opt)
+      extensionMinutes = parseInt(opt.match(/\d+/), 10)
   return extensionMinutes
 
 # 経由地判定
