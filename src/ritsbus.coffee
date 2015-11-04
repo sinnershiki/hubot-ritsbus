@@ -1,5 +1,5 @@
 # Description:
-#   近江鉄道バスfrom立命館to南草津(or草津)の時刻表通知
+#   立命館大学に関連する近江鉄道バスの時刻表通知
 #
 # Commands:
 #   hubot bus <n分後> <S|P|か|笠|西> - to南草津駅from立命館
@@ -115,7 +115,6 @@ getViaBusStop = (options) ->
 # バスの一覧文字列を返す
 getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
   # 今の時間帯にextensionMinutes（デフォルトでは7）分後から
-  # 3時間以内にあるバスを7件まで次のバスとして表示する
   dayIndex = getDayOfWeek(date, robot)
   afterDate = new Date(date.getTime() + extensionMinutes*60*1000)
   hour = afterDate.getHours()
@@ -126,10 +125,10 @@ getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
   busCounter = 0
   busHour = hour
   busList = ""
+  # 3時間以内にあるバスを7件まで次のバスとして表示する
   while busCounter < SHOW_MAX_BUS and hour+3 > busHour
     nextBus = []
     key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
-
     while robot.brain.data[key] is null and busHour <= 24
       busHour++
       key = "#{to}_#{allDay[dayIndex]}_time#{busHour}"
@@ -150,8 +149,9 @@ getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
       if busCounter >= SHOW_MAX_BUS
         break
 
-    busHour++
     busList += "#{busHour}時：#{nextBus.join()}\n"
+    busHour++
+
   return busList
 
 # 曜日の要素取得
