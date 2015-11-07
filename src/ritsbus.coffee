@@ -19,13 +19,14 @@ viaPanaEast = ["P", "パナ東"]
 viaKagayaki = ["か", "かがやき"]
 viaKasayama = ["笠", "笠山"]
 viaPanaWest = ["西", "パナ西"]
-viaList = [viaShuttle, viaPanaEast, viaKagayaki, viaKasayama, viaPanaWest]
+viaRitsumei = ["立"]
+viaList = [viaShuttle, viaPanaEast, viaKagayaki, viaKasayama, viaPanaWest, viaRitsumei]
 toList = ["minakusa", "kusatsu", "ritsumei"]
 allDay = ["ordinary", "saturday", "holiday"]
 allDayName = ["平日", "土曜日", "日曜・祝日"]
 urlToMinakusa = ["http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=1&eigCd=7&teicd=1050&KaiKbn=NOW&pole=2", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=2&eigCd=7&teicd=1050&KaiKbn=NOW&pole=2", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=3&eigCd=7&teicd=1050&KaiKbn=NOW&pole=2"]
 urlToKusatsu = ["http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=1&eigCd=7&teicd=1050&KaiKbn=NOW&pole=1", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=2&eigCd=7&teicd=1050&KaiKbn=NOW&pole=1", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=3&eigCd=7&teicd=1050&KaiKbn=NOW&pole=1"]
-urlToRitsumei = ["http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=1&eigCd=7&teicd=1250&KaiKbn=NOW&pole=1", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?KaiKbn=NEXT&projCd=2&eigCd=7&pole=1&teiCd=1250", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=3&eigCd=7&teicd=1250&KaiKbn=NOW&pole=1"]
+urlToRitsumei = ["http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=1&eigCd=7&teicd=1250&KaiKbn=NOW&pole=1", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=2&eigCd=7&teicd=1250&KaiKbn=NOW&pole=1", "http://time.khobho.co.jp/ohmi_bus/tim_dsp.asp?projCd=3&eigCd=7&teicd=1250&KaiKbn=NOW&pole=1"]
 urls = {
   "minakusa":
     urlToMinakusa
@@ -125,7 +126,7 @@ parseBody = (to, day, body) ->
     time = parseInt($(this).children('td').eq(0).find('b').text(), 10)
     if time in [5..24]
       bus = $(this).children('td').eq(1).find('a').text()
-      bus = bus.match(/[P|か|笠|西]?\d{2}/g)
+      bus = bus.match(/[P|か|笠|西|立]?\d{2}/g)
       key = "#{to}_#{day}_time#{time}"
       busSchedule[key] = bus
   return busSchedule
