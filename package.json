@@ -28,6 +28,7 @@
     "hubot": "2.x"
   },
   "devDependencies": {
+    "rewire": "^2.3.4",
     "chai": "^2.1.1",
     "coffee-script": "1.6.3",
     "grunt": "^0.4.5",
