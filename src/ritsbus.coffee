@@ -12,7 +12,6 @@ request = require('request')
 cheerio = require('cheerio')
 iconv = require('iconv')
 PublicHoliday = require('japanese-public-holiday')
-
 SHOW_MAX_BUS = 7
 viaShuttle = ["S", "直", "shuttle", "シャトル","直行"]
 viaPanaEast = ["P", "パナ東"]
@@ -43,56 +42,57 @@ module.exports = (robot) ->
   new cron('0 3 * * *', () ->
     now = new Date
     console.log "午前3時:#{now}"
-    # dayIndex = getDayOfWeek(now,robot)
-    # scrapingBusSchedule(allDay[dayIndex], urlToMinakusa[dayIndex], robot)
+    ###
+    for day, index in allDay
+      for to in toList
+        brainBusSchedule(to, day, urls[to][index], robot)
+    ###
   ).start()
 
   # 立命館から南草津行き
   robot.respond /(bus|mbus|バス)(.*)/i, (msg) ->
-    to = toList[0] # "minakusa"
-    toName = "南草津"
     now = new Date
+    to = toList[0] # "minakusa"
+    toName = "南草津駅"
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # 何分後のバスを検索するか取得
-    extensionMinutes = getExtensionMinutes(options)
-
+    # バスを検索する時間を指定
+    searchDate = getSearchDate(now, options)
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
     replyMessage = "\n#{toName}行き \n"
-    replyMessage += getBusList(to, viaBusStop, extensionMinutes, now, robot)
+    replyMessage += getBusList(to, viaBusStop, searchDate, robot)
     msg.reply replyMessage
 
   # 立命館から草津行き
   robot.respond /(kbus)(.*)/i, (msg) ->
-    to = toList[1] # "kusatsu"
-    toName = "草津"
     now = new Date
+    to = toList[1] # "kusatsu"
+    toName = "草津駅"
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # 何分後のバスを検索するか取得
-    extensionMinutes = getExtensionMinutes(options)
+    # バスを検索する時間を指定
+    searchDate = getSearchDate(now, options)
 
     replyMessage = "\n#{toName}行き \n"
-    replyMessage += getBusList(to, "", extensionMinutes, now, robot)
+    replyMessage += getBusList(to, "", searchDate, robot)
     msg.reply replyMessage
 
   # 南草津から立命館行き
   robot.respond /(rbus)(.*)/i, (msg) ->
+    now = new Date
     to = toList[2] # "ritsumei"
     toName = "立命館大学"
-    now = new Date
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # 何分後のバスを検索するか取得
-    extensionMinutes = getExtensionMinutes(options)
-
+    # バスを検索する時間を指定
+    searchDate = getSearchDate(now, options)
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
     replyMessage = "\n#{toName}行き \n"
-    replyMessage += getBusList(to, viaBusStop, extensionMinutes, now, robot)
+    replyMessage += getBusList(to, viaBusStop, searchDate, robot)
     msg.reply replyMessage
 
   # コマンドから全てのバスの時刻表を取得
@@ -131,13 +131,19 @@ parseBody = (to, day, body) ->
       busSchedule[key] = bus
   return busSchedule
 
-# 何分後か判定
-getExtensionMinutes = (options) ->
-  #デフォルトは7分後からのバスを表示
+# コマンドのオプションから検索するバスの時間を返す
+getSearchDate = (date, options) ->
   extensionMinutes = 7
+  searchDate = new Date(date.getTime() + extensionMinutes*60*1000)
   for opt in options
-    extensionMinutes = parseInt(opt.match(/\d+/), 10) if /\d+/.test(opt)
-  return extensionMinutes
+    if extensionMinutes = parseInt(opt.match(/\d+/), 10)
+      searchDate = new Date(date.getTime() + extensionMinutes*60*1000)
+    if time = opt.match(/\d+:\d+/)
+      time = time.toString().split(":")
+      searchDate.setHours(parseInt(time[0], 10))
+      searchDate.setMinutes(parseInt(time[1], 10))
+      searchDate.setSeconds(0)
+  return searchDate
 
 # 経由地判定
 getViaBusStop = (options) ->
@@ -148,12 +154,10 @@ getViaBusStop = (options) ->
   return viaBusStop
 
 # バスの一覧文字列を返す
-getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
-  # 今の時間帯にextensionMinutes（デフォルトでは7）分後から
-  dayIndex = getDayOfWeek(date, robot)
-  afterDate = new Date(date.getTime() + extensionMinutes*60*1000)
-  hour = afterDate.getHours()
-  min = afterDate.getMinutes()
+getBusList = (to, viaBusStop, searchDate, robot) ->
+  dayIndex = getDayOfWeek(searchDate)
+  hour = searchDate.getHours()
+  min = searchDate.getMinutes()
   if hour in [0..4]
     hour = 5
     min = 0
@@ -188,7 +192,7 @@ getBusList = (to, viaBusStop, extensionMinutes, date, robot) ->
   return busList
 
 # 曜日の要素取得
-getDayOfWeek = (now,robot) ->
+getDayOfWeek = (now) ->
   dayIndex = 0
   if PublicHoliday.isPublicHoliday(now) or now.getDay() is 0
     dayIndex = 2
