@@ -24,17 +24,24 @@ describe 'ritsbus', ->
     expect(date).to.eql(searchDate)
 
     # n分後指定
+    # 20分後
+    date = new Date
     searchDate = getSearchDate(date, ["20","P"])
     date = new Date(date.getTime() + 20*60*1000)
     expect(date).to.eql(searchDate)
+    # 0分後
+    date = new Date
+    searchDate = getSearchDate(date, ["0","P"])
+    date = new Date(date.getTime() + 0*60*1000)
+    expect(date).to.eql(searchDate)
 
     # hh:mm 形式
+    date = new Date
     searchDate = getSearchDate(date, ["10:10", "P"])
     date.setHours(10)
     date.setMinutes(10)
     date.setSeconds(0)
     expect(date).to.eql(searchDate)
-
 
   it 'check parse minakusa ordinary data', ->
     json = 'test/parsedJSON/minakusa_ordinary.json'
