@@ -36,17 +36,13 @@ urls = {
 }
 
 module.exports = (robot) ->
-  # 毎日午前3時にその曜日の時刻表を取得し，データを更新する(エラー処理などはそのうち追加
-  # TO DO : cronで叩くとなぜかエラーが出るのなんとかする
-  # まあ最悪自分にリプライ投げるみたいな雑な対策でもいいかな
-  new cron('0 3 * * *', () ->
+  # 毎日午前4時に時刻表データ自動更新
+  new cron('1 4 * * *', () ->
     now = new Date
-    console.log "午前3時:#{now}"
-    ###
+    console.log "自動更新:#{now}"
     for day, index in allDay
       for to in toList
         brainBusSchedule(to, day, urls[to][index], robot)
-    ###
   ).start()
 
   # 立命館から南草津行き
