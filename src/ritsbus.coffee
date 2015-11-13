@@ -40,9 +40,14 @@ module.exports = (robot) ->
   new cron('1 4 * * *', () ->
     now = new Date
     console.log "自動更新:#{now}"
-    for day, index in allDay
-      for to in toList
-        brainBusSchedule(to, day, urls[to][index], robot)
+    try
+      for day, index in allDay
+        for to in toList
+          brainBusSchedule(to, day, urls[to][index], robot)
+    catch error
+      console.log error
+      envelope = room: 'Home'
+      robot.send envelope, error.toString()
   ).start()
 
   # 立命館から南草津行き
