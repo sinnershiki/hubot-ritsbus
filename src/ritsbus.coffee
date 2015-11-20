@@ -62,7 +62,7 @@ module.exports = (robot) ->
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
-    replyMessage = "\n#{toName}行き \n"
+    replyMessage = "\n#{toName}行き(#{searchDate.getHours()}:#{searchDate.getMinutes()}以降のバス) \n"
     replyMessage += getBusList(to, viaBusStop, searchDate, robot)
     msg.reply replyMessage
 
@@ -76,7 +76,7 @@ module.exports = (robot) ->
     # バスを検索する時間を指定
     searchDate = getSearchDate(now, options)
 
-    replyMessage = "\n#{toName}行き \n"
+    replyMessage = "\n#{toName}行き(#{searchDate.getHours()}:#{searchDate.getMinutes()}以降のバス) \n"
     replyMessage += getBusList(to, "", searchDate, robot)
     msg.reply replyMessage
 
@@ -92,7 +92,7 @@ module.exports = (robot) ->
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
-    replyMessage = "\n#{toName}行き \n"
+    replyMessage = "\n#{toName}行き(#{searchDate.getHours()}:#{searchDate.getMinutes()}以降のバス) \n"
     replyMessage += getBusList(to, viaBusStop, searchDate, robot)
     msg.reply replyMessage
 
