@@ -16,157 +16,69 @@ describe 'ritsbus', ->
 
     require('../src/ritsbus')(@robot)
 
+  assertTimeOptionAfterMinutes = (expectOption, expectMinutes) ->
+    date = new Date
+    searchDate = getSearchDate(date, expectOption)
+    date = new Date(date.getTime() + expectMinutes*60*1000)
+    expect(date).to.eql(searchDate)
+
   it 'can apply time option (after n minutes)', ->
     # デフォルト
-    date = new Date
-    searchDate = getSearchDate(date, ["P"])
-    date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["P"], 7)
     # 0分後
-    date = new Date
-    searchDate = getSearchDate(date, ["0","P"])
-    date = new Date(date.getTime() + 0*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["0", "P"], 0)
     # 20分後
-    date = new Date
-    searchDate = getSearchDate(date, ["20","P"])
-    date = new Date(date.getTime() + 20*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["20", "P"], 20)
     # 2時間後(120分)
+    assertTimeOptionAfterMinutes(["120", "P"], 120)
+
+  assertTimeOption24HourClock = (expectOption, hours, minutes, seconds) ->
     date = new Date
-    searchDate = getSearchDate(date, ["120","P"])
-    date = new Date(date.getTime() + 120*60*1000)
+    searchDate = getSearchDate(date, expectOption)
+    date.setHours(hours)
+    date.setMinutes(minutes)
+    date.setSeconds(seconds)
     expect(date).to.eql(searchDate)
 
   it 'can apply time option (hh:mm style)', ->
     # hh:mm 形式
-    date = new Date
-    searchDate = getSearchDate(date, ["10:10", "P"])
-    date.setHours(10)
-    date.setMinutes(10)
-    date.setSeconds(0)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOption24HourClock(["10:10", "P"], 10, 10, 0)
     # parseIntで小数点以下は無視
-    date = new Date
-    searchDate = getSearchDate(date, ["P","15:15.111111111111"])
-    date.setHours(15)
-    date.setMinutes(15)
-    date.setSeconds(0)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOption24HourClock(["P", "15:15.111111111111"], 15, 15, 0)
     # 分が59を超えると59分のバス表示
-    date = new Date
-    searchDate = getSearchDate(date, ["10:70", "P"])
-    date.setHours(10)
-    date.setMinutes(59)
-    date.setSeconds(0)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOption24HourClock(["10:70", "P"], 10, 59, 0)
     # 時が24を超えると24時に設定
-    date = new Date
-    searchDate = getSearchDate(date, ["26:10", "P"])
-    date.setHours(24)
-    date.setMinutes(10)
-    date.setSeconds(0)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOption24HourClock(["26:10", "P"], 24, 10, 0)
     # 頭に-をつけてもその後の数値で判断
-    date = new Date
-    searchDate = getSearchDate(date, ["P","-18:30"])
-    date.setHours(18)
-    date.setMinutes(30)
-    date.setSeconds(0)
-    expect(date).to.eql(searchDate)
+    assertTimeOption24HourClock(["P", "-18:30"], 18, 30, 0)
 
   it 'cannot aplly time option', ->
     # parseできないパターン
-    date = new Date
-    searchDate = getSearchDate(date, ["2*60*60*1000","P"])
-    date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["2*60*60*1000", "P"], 7)
     # 3時間後（2時間を超えるのでデフォルトタイム）
-    date = new Date
-    searchDate = getSearchDate(date, ["180","P"])
-    date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["180", "P"], 7)
     # 24時間後（2時間を超えるのでデフォルトタイム）
-    date = new Date
-    searchDate = getSearchDate(date, ["1440","P"])
-    date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
-
+    assertTimeOptionAfterMinutes(["1440", "P"], 7)
     # 正規表現に通らない場合は7分後のデフォルトタイムで返す
-    date = new Date
-    searchDate = getSearchDate(date, ["P","18:-30"])
-    date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
+    assertTimeOptionAfterMinutes(["P", "18:-30"], 7)
 
-
-  it 'check parse minakusa ordinary data', ->
-    json = 'test/parsedJSON/minakusa_ordinary.json'
+  assertParseHTML = (destination, category) ->
+    json = "test/parsedJSON/#{destination}_#{category}.json"
     busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/minakusa_ordinary.html'
+    file = "test/html/#{destination}_#{category}.html"
     html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("minakusa", "ordinary", html.toString()))
+    expect(busSchedule).to.eql(parseBody(destination, category, html.toString()))
 
-  it 'check parse minakusa saturday data', ->
-    json = 'test/parsedJSON/minakusa_saturday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/minakusa_saturday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("minakusa", "saturday", html.toString()))
+  assertParseHTMLDestination = (destination) ->
+    assertParseHTML(destination, "ordinary")
+    assertParseHTML(destination, "saturday")
+    assertParseHTML(destination, "holiday")
 
-  it 'check parse minakusa holiday data', ->
-    json = 'test/parsedJSON/minakusa_holiday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/minakusa_holiday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("minakusa", "holiday", html.toString()))
+  it 'check parse minakusa', ->
+    assertParseHTMLDestination("minakusa")
 
-  it 'check parse kusatsu ordinary data', ->
-    json = 'test/parsedJSON/kusatsu_ordinary.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/kusatsu_ordinary.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("kusatsu", "ordinary", html.toString()))
+  it 'check parse kusatsu', ->
+    assertParseHTMLDestination("kusatsu")
 
-  it 'check parse kusatsu saturday data', ->
-    json = 'test/parsedJSON/kusatsu_saturday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/kusatsu_saturday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("kusatsu", "saturday", html.toString()))
-
-  it 'check parse kusatsu holiday data', ->
-    json = 'test/parsedJSON/kusatsu_holiday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/kusatsu_holiday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("kusatsu", "holiday", html.toString()))
-
-  it 'check parse ritsumei ordinary data', ->
-    json = 'test/parsedJSON/ritsumei_ordinary.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/ritsumei_ordinary.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("ritsumei", "ordinary", html.toString()))
-
-  it 'check parse ritsumei saturday data', ->
-    json = 'test/parsedJSON/ritsumei_saturday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/ritsumei_saturday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("ritsumei", "saturday", html.toString()))
-
-  it 'check parse ritsumei holiday data', ->
-    json = 'test/parsedJSON/ritsumei_holiday.json'
-    busSchedule = JSON.parse(fs.readFileSync(json, "utf-8"))
-    file = 'test/html/ritsumei_holiday.html'
-    html = fs.readFileSync file, "utf-8"
-    expect(busSchedule).to.eql(parseBody("ritsumei", "holiday", html.toString()))
+  it 'check parse ritsumei', ->
+    assertParseHTMLDestination("ritsumei")
