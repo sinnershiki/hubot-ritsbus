@@ -68,6 +68,14 @@ describe 'ritsbus', ->
     date.setSeconds(0)
     expect(date).to.eql(searchDate)
 
+    # 頭に-をつけてもその後の数値で判断
+    date = new Date
+    searchDate = getSearchDate(date, ["P","-18:30"])
+    date.setHours(18)
+    date.setMinutes(30)
+    date.setSeconds(0)
+    expect(date).to.eql(searchDate)
+
     # 正規表現に通らない場合は7分後のデフォルトタイムで返す
     date = new Date
     searchDate = getSearchDate(date, ["P","18:-30"])
