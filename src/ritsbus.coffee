@@ -138,7 +138,8 @@ getSearchDate = (date, options) ->
   searchDate = new Date(date.getTime() + extensionMinutes*60*1000)
   for opt in options
     if extensionMinutes = opt.match(/^\d+$/)
-      searchDate = new Date(date.getTime() + parseInt(extensionMinutes, 10)*60*1000)
+      min = parseInt(extensionMinutes, 10)
+      searchDate = new Date(date.getTime() + min*60*1000) if min <= 120
     if hhmm = opt.match(/\d+:\d+/)
       time = hhmm.toString().split(":")
       hour = parseInt(time[0], 10)

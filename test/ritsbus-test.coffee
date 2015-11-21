@@ -16,17 +16,11 @@ describe 'ritsbus', ->
 
     require('../src/ritsbus')(@robot)
 
-  it 'check time option parse after n minutes', ->
+  it 'can apply time option (after n minutes)', ->
     # デフォルト
     date = new Date
     searchDate = getSearchDate(date, ["P"])
     date = new Date(date.getTime() + 7*60*1000)
-    expect(date).to.eql(searchDate)
-
-    # 20分後
-    date = new Date
-    searchDate = getSearchDate(date, ["20","P"])
-    date = new Date(date.getTime() + 20*60*1000)
     expect(date).to.eql(searchDate)
 
     # 0分後
@@ -35,7 +29,19 @@ describe 'ritsbus', ->
     date = new Date(date.getTime() + 0*60*1000)
     expect(date).to.eql(searchDate)
 
-  it 'check time option parse hh:mm style', ->
+    # 20分後
+    date = new Date
+    searchDate = getSearchDate(date, ["20","P"])
+    date = new Date(date.getTime() + 20*60*1000)
+    expect(date).to.eql(searchDate)
+
+    # 2時間後(120分)
+    date = new Date
+    searchDate = getSearchDate(date, ["120","P"])
+    date = new Date(date.getTime() + 120*60*1000)
+    expect(date).to.eql(searchDate)
+
+  it 'can apply time option (hh:mm style)', ->
     # hh:mm 形式
     date = new Date
     searchDate = getSearchDate(date, ["10:10", "P"])
@@ -76,11 +82,31 @@ describe 'ritsbus', ->
     date.setSeconds(0)
     expect(date).to.eql(searchDate)
 
+  it 'cannot aplly time option', ->
+    # parseできないパターン
+    date = new Date
+    searchDate = getSearchDate(date, ["2*60*60*1000","P"])
+    date = new Date(date.getTime() + 7*60*1000)
+    expect(date).to.eql(searchDate)
+
+    # 3時間後（2時間を超えるのでデフォルトタイム）
+    date = new Date
+    searchDate = getSearchDate(date, ["180","P"])
+    date = new Date(date.getTime() + 7*60*1000)
+    expect(date).to.eql(searchDate)
+
+    # 24時間後（2時間を超えるのでデフォルトタイム）
+    date = new Date
+    searchDate = getSearchDate(date, ["1440","P"])
+    date = new Date(date.getTime() + 7*60*1000)
+    expect(date).to.eql(searchDate)
+
     # 正規表現に通らない場合は7分後のデフォルトタイムで返す
     date = new Date
     searchDate = getSearchDate(date, ["P","18:-30"])
     date = new Date(date.getTime() + 7*60*1000)
     expect(date).to.eql(searchDate)
+
 
   it 'check parse minakusa ordinary data', ->
     json = 'test/parsedJSON/minakusa_ordinary.json'
