@@ -18,7 +18,7 @@ describe 'ritsbus', ->
 
   assertTimeOptionAfterMinutes = (expectOption, expectMinutes) ->
     date = new Date
-    searchDate = getSearchDate(date, expectOption)
+    searchDate = getSearchDate(date, expectOption, 7)
     date = new Date(date.getTime() + expectMinutes*60*1000)
     expect(date).to.eql(searchDate)
 
@@ -34,7 +34,7 @@ describe 'ritsbus', ->
 
   assertTimeOption24HourClock = (expectOption, hours, minutes, seconds) ->
     date = new Date
-    searchDate = getSearchDate(date, expectOption)
+    searchDate = getSearchDate(date, expectOption, 7)
     date.setHours(hours)
     date.setMinutes(minutes)
     date.setSeconds(seconds)
