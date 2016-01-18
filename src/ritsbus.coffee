@@ -57,8 +57,8 @@ module.exports = (robot) ->
     toName = "南草津駅"
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # バスを検索する時間を指定
-    searchDate = getSearchDate(now, options)
+    # バスを検索する時間を指定（デフォルトの場合7分後で検索）
+    searchDate = getSearchDate(now, options, 7)
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
@@ -73,8 +73,8 @@ module.exports = (robot) ->
     toName = "草津駅"
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # バスを検索する時間を指定
-    searchDate = getSearchDate(now, options)
+    # バスを検索する時間を指定（デフォルトの場合7分後で検索）
+    searchDate = getSearchDate(now, options, 7)
 
     replyMessage = "\n#{toName}行き(#{searchDate.getHours()}:#{searchDate.getMinutes()}以降のバス) \n"
     replyMessage += getBusList(to, "", searchDate, robot)
@@ -87,8 +87,8 @@ module.exports = (robot) ->
     toName = "立命館大学"
     options = msg.match[2].replace(/^\s+/,"").split(/\s/)
 
-    # バスを検索する時間を指定
-    searchDate = getSearchDate(now, options)
+    # バスを検索する時間を指定（デフォルトの場合0分後で検索）
+    searchDate = getSearchDate(now, options, 0)
     # バスの経由地判定
     viaBusStop = getViaBusStop(options)
 
@@ -133,8 +133,7 @@ parseBody = (to, day, body) ->
   return busSchedule
 
 # コマンドのオプションから検索するバスの時間を返す
-getSearchDate = (date, options) ->
-  extensionMinutes = 7
+getSearchDate = (date, options, extensionMinutes) ->
   searchDate = new Date(date.getTime() + extensionMinutes*60*1000)
   for opt in options
     if extensionMinutes = opt.match(/^\d+$/)
