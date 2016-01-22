@@ -46,9 +46,20 @@ module.exports = (robot) ->
           brainBusSchedule(to, day, urls[to][index], robot)
     catch error
       console.log error
-      envelope = room: 'Home'
       robot.send envelope, error.toString()
   ).start()
+
+  # 毎日19時に終バス通知
+  new cron('1 19 * * *', () ->
+    today = new Date
+    console.log "終バス通知:#{today}"
+    try
+      robot.send envelope, bus
+    catch error
+      console.log error
+      robot.send envelope, error.toString()
+  ).start()
+
 
   # 立命館から南草津行き
   robot.respond /(bus|mbus|バス)(.*)/i, (msg) ->
@@ -115,8 +126,15 @@ brainBusSchedule = (to, day, url, robot) ->
     body = new Buffer(body, 'binary');
     body = conv.convert(body).toString();
     busSchedule = parseBody(to, day, body)
+    lastFlag = false
+    beforeValue = null
     for key, value of busSchedule
       robot.brain.data[key] = value
+      if value == null and lastFlag == false
+        lastFlag = true
+        key = "#{to}_#{day}_last"
+        robot.brain.data[key] = beforeValue
+      beforeValue = value
     robot.brain.save()
 
 # 時刻表のbodyからデータを加工し，hubotに記憶させる
@@ -125,11 +143,13 @@ parseBody = (to, day, body) ->
   $ = cheerio.load(body)
   $('tr').each ->
     time = parseInt($(this).children('td').eq(0).find('b').text(), 10)
+    lastBus = {S: null, P: null, C: null}
     if time in [5..24]
       bus = $(this).children('td').eq(1).find('a').text()
       bus = bus.match(/[P|か|笠|西|立]?\d{2}/g)
       key = "#{to}_#{day}_time#{time}"
       busSchedule[key] = bus
+
   return busSchedule
 
 # コマンドのオプションから検索するバスの時間を返す
