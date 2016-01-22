@@ -54,12 +54,12 @@ module.exports = (robot) ->
     today = new Date
     console.log "終バス通知:#{today}"
     try
-      robot.send envelope, bus
+      key = "#{to}_#{day}_last"
+      robot.send envelope, robot.brain.data[key]
     catch error
       console.log error
       robot.send envelope, error.toString()
   ).start()
-
 
   # 立命館から南草津行き
   robot.respond /(bus|mbus|バス)(.*)/i, (msg) ->
