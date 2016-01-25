@@ -1,7 +1,7 @@
 {
   "name": "hubot-ritsbus",
   "description": "search ohmibus",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "author": "Kosuke Sugano <sinner.shiki.g@gmail.com>",
   "contributors":[{
       "name": "mot",

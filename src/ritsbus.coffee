@@ -35,30 +35,40 @@ urls = {
     urlToRitsumei
 }
 
+config =
+  cron_post_room: process.env.HUBOT_RITSBUS_DEFAULT_ROOM
+
 module.exports = (robot) ->
   # 毎日午前4時に時刻表データ自動更新
   new cron('1 4 * * *', () ->
     now = new Date
     console.log "自動更新:#{now}"
+    envelope =
+      room: config.cron_post_room
     try
       for day, index in allDay
         for to in toList
           brainBusSchedule(to, day, urls[to][index], robot)
     catch error
       console.log error
-      robot.send envelope, error.toString()
+      robot.send envelope, error.toString() if envelope.room?
   ).start()
 
   # 毎日19時に終バス通知
   new cron('1 19 * * *', () ->
     today = new Date
     console.log "終バス通知:#{today}"
+    to = toList[0] # "minakusa"
+    dayIndex = getDayOfWeek(today)
+    envelope =
+      room: config.cron_post_room
     try
-      key = "#{to}_#{day}_last"
-      robot.send envelope, robot.brain.data[key]
+      key = "#{to}_#{allDay[dayIndex]}_last"
+      console.log robot.brain.data[key]
+      robot.send envelope, robot.brain.data[key] if envelope.room?
     catch error
       console.log error
-      robot.send envelope, error.toString()
+      robot.send envelope, error.toString() if envelope.room?
   ).start()
 
   # 立命館から南草津行き
