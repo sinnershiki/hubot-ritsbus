@@ -117,6 +117,17 @@ module.exports = (robot) ->
     replyMessage += getBusList(to, viaBusStop, searchDate, robot)
     msg.reply replyMessage
 
+  # 終バス
+  robot.respond /(last bus|終バス)(.*)/i, (msg) ->
+    today = new Date
+    to = toList[0] # "minakusa"
+    toName = "南草津駅"
+    dayIndex = getDayOfWeek(today)
+    key = "#{to}_#{allDay[dayIndex]}_last"
+    replyMessage = "\n#{toName}行き最後のバス) \n"
+    replyMessage += robot.brain.data[key]
+    msg.reply replyMessage
+
   # コマンドから全てのバスの時刻表を取得
   robot.respond /update/i, (msg) ->
     now = new Date
@@ -136,14 +147,14 @@ brainBusSchedule = (to, day, url, robot) ->
     body = new Buffer(body, 'binary');
     body = conv.convert(body).toString();
     busSchedule = parseBody(to, day, body)
-    lastFlag = false
     beforeValue = null
     for key, value of busSchedule
       robot.brain.data[key] = value
-      if value == null and lastFlag == false
-        lastFlag = true
-        key = "#{to}_#{day}_last"
-        robot.brain.data[key] = beforeValue
+      if value == null and beforeValue != null
+        lastKey = "#{to}_#{day}_last"
+        time = beforeKey.match(/d{2}/g)
+        robot.brain.data[lastKey] = "#{time}時: #{beforeValue}"
+      beforeKey = key
       beforeValue = value
     robot.brain.save()
 
@@ -159,7 +170,6 @@ parseBody = (to, day, body) ->
       bus = bus.match(/[P|か|笠|西|立]?\d{2}/g)
       key = "#{to}_#{day}_time#{time}"
       busSchedule[key] = bus
-
   return busSchedule
 
 # コマンドのオプションから検索するバスの時間を返す
