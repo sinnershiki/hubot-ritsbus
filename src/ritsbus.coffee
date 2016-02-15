@@ -152,7 +152,7 @@ brainBusSchedule = (to, day, url, robot) ->
       robot.brain.data[key] = value
       if value == null and beforeValue != null
         lastKey = "#{to}_#{day}_last"
-        time = beforeKey.match(/d{2}/g)
+        time = beforeKey.match(/\d{2}/g)
         robot.brain.data[lastKey] = "#{time}時: #{beforeValue}"
       beforeKey = key
       beforeValue = value
@@ -164,7 +164,7 @@ parseBody = (to, day, body) ->
   $ = cheerio.load(body)
   $('tr').each ->
     time = parseInt($(this).children('td').eq(0).find('b').text(), 10)
-    lastBus = {S: null, P: null, C: null}
+    #lastBus = {S: null, P: null, C: null}
     if time in [5..24]
       bus = $(this).children('td').eq(1).find('a').text()
       bus = bus.match(/[P|か|笠|西|立]?\d{2}/g)
