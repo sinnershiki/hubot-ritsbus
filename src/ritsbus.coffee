@@ -64,7 +64,7 @@ module.exports = (robot) ->
       room: config.cron_post_room
     try
       key = "#{to}_#{allDay[dayIndex]}_last"
-      console.log robot.brain.data[key]
+      console.log "本日の終バスです\n#{robot.brain.data[key]}"
       robot.send envelope, robot.brain.data[key] if envelope.room?
     catch error
       console.log error
